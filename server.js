@@ -3,6 +3,7 @@
 // init project
 var express = require('express');
 var app = express();
+var json = require('./urlmap.json');
 
 // http://expressjs.com/en/starter/static-files.html
 app.use(express.static('public'));
@@ -12,23 +13,21 @@ app.get("/", function (request, response) {
   response.sendFile(__dirname + '/views/index.html');
 });
 
-app.get("/api/whoami", function (request, response) {
-  var reqIn = request.ip; //string of ip
-  //var accLang = request.acceptsLanguages();
-  var accLang = request.get('Accept-Language');
+app.get("/new/:toShorten", function (request, response) {
+  //receive request and extract the given url
+  var reqIn = request.params.toShorten; //string of ip  
+  //create a new "short" url
+  //then, attach to it the given 'long' url 
   
-  //parse header for software
-  var uAgentStr = request.get('User-Agent');
-  var regExp = /\((.*)\)/;
-  var matches = regExp.exec(uAgentStr);  
-  
-  //header stuff
+  //redirect any 'gets' for short url to the saved 'long' url
+    
+  //random header stuff
   var cOptions = {httpOnly: true };
   response.cookie('connect.sid','one-cookie-to-rule-them-all', cOptions);
   response.type('json');
-  
+    
   //send the response
-  response.send(jfyer(reqIn, accLang, matches[1]));  
+  response.send(jfyer( json.urls[0].old_url, json.urls[0].new_url ));  
 });
 
 //make my own middleware
@@ -40,8 +39,8 @@ app.use( function ( request, response, next ){
 
 
 //simplify the response calls
-function jfyer (ipAddy, langInfo, softWhat){  
-  var jOut = { "ipaddress": ipAddy, "language": langInfo, "software": softWhat };  
+function jfyer (longOne, shortOne){  
+  var jOut = { "original_url": longOne, "short_url": shortOne};  
   var stringOut = JSON.stringify(jOut);   
   return stringOut;
 }
